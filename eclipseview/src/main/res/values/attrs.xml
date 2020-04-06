@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="EclipseLogo">
+        <attr name="startBackgroundColor" format="color"/>
+        <attr name="endBackgroundColor" format="color"/>
+        <attr name="sunColor" format="color"/>
+        <attr name="moonColor" format="color"/>
+        <attr name="logoSrc" format="reference" />
+        <attr name="logoSize">
+            <enum name="small" value="0" />
+            <enum name="middle" value="1" />
+            <enum name="large" value="2" />
+        </attr>
+    </declare-styleable>
+</resources>

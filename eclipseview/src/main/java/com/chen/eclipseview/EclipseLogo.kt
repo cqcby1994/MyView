@@ -16,7 +16,7 @@ import java.text.DecimalFormat
  */
 class EclipseLogo : View {
     private val TAG = "EclipseLogo"
-    private var mContext: Context
+    private lateinit var mContext: Context
 
     //太阳\月亮画笔
     private lateinit var mSunPaint: Paint
@@ -32,7 +32,7 @@ class EclipseLogo : View {
     //月亮的颜色
     private var mMoonColor: Int = Color.BLACK
     //logo src
-    private var mLogoID: Int = R.mipmap.ic_launcher
+    private var mLogoID: Int = R.mipmap.dingdingicon
     //logo bitmap
     private lateinit var mLogoBitmap: Bitmap
     //logo size
@@ -62,9 +62,11 @@ class EclipseLogo : View {
     private val MSG_IN = 1
     private val MSG_OUT = 2
 
-    private val mAnimationSpace = 10L
+    private var mAnimationSpeed = 10L
 
     private val mMoonXOffset = 5
+
+    private var mSpeed = 1
 
     private var eclipseListener: EclipseListener? = null
 
@@ -74,7 +76,7 @@ class EclipseLogo : View {
                 if (mMoonX < centerX) {
                     mMoonX += mMoonXOffset
                     invalidate()
-                    it.target.sendEmptyMessageDelayed(MSG_IN, mAnimationSpace)
+                    it.target.sendEmptyMessageDelayed(MSG_IN, mAnimationSpeed)
                 } else if (kotlin.math.abs(mMoonX - centerX) <= mMoonXOffset) {
                     isLogoShow = true
                     invalidate()
@@ -94,7 +96,7 @@ class EclipseLogo : View {
                         mLogoPaint.alpha = tempAlpha
                     }
                     invalidate()
-                    it.target.sendEmptyMessageDelayed(MSG_OUT, mAnimationSpace)
+                    it.target.sendEmptyMessageDelayed(MSG_OUT, mAnimationSpeed)
                 }
                 progressOffset = txfloat((mMoonX - mMoonStartX), (4 * mSunR))
 
@@ -121,19 +123,7 @@ class EclipseLogo : View {
 
     @SuppressLint("Recycle", "NewApi")
     constructor(context: Context, attributeSet: AttributeSet) : super(context, attributeSet) {
-        mContext = context
-        val ta = context.obtainStyledAttributes(attributeSet, R.styleable.EclipseLogo)
-        mBgStartColor = ta.getColor(R.styleable.EclipseLogo_startBackgroundColor, Color.WHITE)
-        mBgEndColor = ta.getColor(R.styleable.EclipseLogo_endBackgroundColor, Color.BLACK)
-        mSunColor = ta.getColor(R.styleable.EclipseLogo_sunColor, Color.YELLOW)
-        mMoonColor = ta.getColor(R.styleable.EclipseLogo_moonColor, Color.BLACK)
-        mLogoID = ta.getResourceId(R.styleable.EclipseLogo_logoSrc, R.mipmap.ic_launcher)
-        logoSize = ta.getInt(R.styleable.EclipseLogo_logoSize, 1)
-
-        ta.recycle()
-
-        Log.d(TAG, "2")
-
+        initAttributeSet(context, attributeSet)
         init()
     }
 
@@ -143,16 +133,21 @@ class EclipseLogo : View {
         attributeSet,
         defStyleAttr
     ) {
+        initAttributeSet(context, attributeSet)
+        init()
+    }
+
+    private fun initAttributeSet(context: Context, attributeSet: AttributeSet) {
         mContext = context
         val ta = context.obtainStyledAttributes(attributeSet, R.styleable.EclipseLogo)
         mBgStartColor = ta.getColor(R.styleable.EclipseLogo_startBackgroundColor, Color.WHITE)
         mBgEndColor = ta.getColor(R.styleable.EclipseLogo_endBackgroundColor, Color.BLACK)
         mSunColor = ta.getColor(R.styleable.EclipseLogo_sunColor, Color.YELLOW)
         mMoonColor = ta.getColor(R.styleable.EclipseLogo_moonColor, Color.BLACK)
-        Log.d(TAG, "3")
         mLogoID = ta.getResourceId(R.styleable.EclipseLogo_logoSrc, R.mipmap.ic_launcher)
+        logoSize = ta.getInt(R.styleable.EclipseLogo_logoSize, 1)
+        mSpeed = ta.getInt(R.styleable.EclipseLogo_speed, 1)
         ta.recycle()
-        init()
     }
 
     @SuppressLint("ObsoleteSdkInt")
@@ -167,7 +162,7 @@ class EclipseLogo : View {
         xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP)
         mLogoPaint = Paint()
         mLogoPaint.alpha = 0
-
+        mAnimationSpeed *= mSpeed
         setBackgroundColor(Color.parseColor("#00000000"))
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             //关闭硬件加速
@@ -268,7 +263,6 @@ class EclipseLogo : View {
         val df = DecimalFormat("0.00") //设置保留位数
         return df.format(a.toFloat() / b).toFloat()
     }
-
 
 
     fun release() {
